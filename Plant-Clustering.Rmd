@@ -1,0 +1,422 @@
+---
+title: "CST4070 - Comp. 3"
+output:
+  html_document:
+    df_print: paged
+---
+
+**Student**:
+
+- Name:Chirag
+- Surname:Naik
+- Student number:M00933470
+- Campus:Dubai
+
+
+## 1. Problem definition
+
+Problem Statement:
+The problem at hand is to identify the characteristics of plant species that contribute to their effectiveness in sequestering CO2 and reducing air pollution. This knowledge will then be utilized to develop guidelines for selecting suitable plants for urban greening projects, aiming to optimize CO2 absorption and air quality improvement.
+
+Who can it benefit ?
+
+Urban Planners and Environmental Agencies: The findings from this research will provide valuable insights to urban planners and environmental agencies in selecting appropriate plant species for urban greening projects. This will enable them to make informed decisions that enhance the effectiveness of green infrastructure in mitigating CO2 emissions and improving air quality.
+
+City Administrations: City administrations can benefit from this research by implementing strategies to incorporate the identified plant species into their urban greening initiatives. This can lead to enhanced carbon sequestration and improved air quality, resulting in a healthier and more sustainable urban environment.
+
+Researchers and Scientists: The research findings will contribute to the existing body of knowledge in the field of urban ecology and environmental science. Researchers and scientists can build upon this research to further explore the mechanisms behind CO2 absorption and air pollution reduction by plant species, leading to more targeted and effective greening strategies.
+
+General Public: The general public stands to benefit from this research through improved air quality in urban areas. The selection of suitable plant species for urban greening projects can help create cleaner and healthier living environments, promoting physical and mental well-being for residents.
+
+Ecosystem and Biodiversity: The identified plant species with high CO2 absorption and air pollution reduction capabilities can contribute to the preservation and restoration of ecosystems. By planting these species in urban areas, the overall biodiversity and ecological balance can be improved, leading to a more sustainable and resilient environment.
+
+State here your research question.
+
+What are the characteristics of plant species within each cluster that make them effective in sequestering CO2 and reducing air pollution, and how can this knowledge be utilized to select suitable plants for urban greening projects?
+
+
+install.packages("readxl") installs the readxl package in R if it is not already installed. The readxl package provides functions for reading data from Excel files.
+
+The line library(readxl) loads the readxl package into the current R session. 
+```{r}
+
+library(readxl)
+excel_file = "/Users/admin/Desktop/Data Science/CST4070/CW3/clust.xlsx"
+data=read_excel(excel_file)
+```
+
+
+## 2. Data description
+
+Here we are selecting a subset of coloumns from the dataset,The selected coloumns include "Plant", "CO2 Absorption Rate", "Growth Habit", "Leaf Surface Area", "Leaf Structure", "Tolerance to Pollution", and "Growth Rate".
+
+By specifying data[, c("Plant", "CO2 Absorption Rate", "Growth Habit", "Leaf Surface Area", "Leaf Structure", "Tolerance to Pollution", "Growth Rate")], the code subset the data data frame by selecting only the specified columns. The subset of data is stored in the subset_data data frame.
+```{r}
+library(dplyr)
+# Specifying the portion of data we intend to use
+subset_data <- data[, c("Plant", "CO2 Absorption Rate", "Growth Habit", "Leaf Surface Area", "Leaf Structure", "Tolerance to Pollution", "Growth Rate")]
+
+subset_data
+```
+The variables in the dataframe are as follows:
+
+Plant: Character variable representing the name of the plant.
+
+CO2 Absorption Rate: Numeric variable indicating the CO2 absorption rate of the plant.
+
+Growth Habit: Character variable describing the growth habit of the plant.
+
+Leaf Surface Area: Character variable indicating the surface area of the plant's leaves.
+
+Leaf Structure: Character variable describing the structure of the plant's leaves.
+
+Tolerance to Pollution: Character variable representing the plant's tolerance to pollution.
+
+Growth Rate: Character variable indicating the growth rate of the plant.
+```{r}
+#Viewing the structure of the data
+str(subset_data)
+```
+
+
+
+We have 104 rows and 7 coloumns in our dataset
+```{r}
+#Viewing the dimensions of the data
+dim(subset_data)
+```
+
+```{r}
+#Viewing the variable names  of the dataset
+colnames(subset_data)
+```
+
+
+
+```{r}
+#Viewing the summary statistics of the data
+summary(subset_data)
+```
+
+
+
+```{r}
+#Viewing the fiest 5 rows  of the dataset
+head(subset_data)
+```
+```{r}
+#Viewing the variable types  of the dataset
+sapply(subset_data,class)
+```
+
+CO2 Absorption Rate: Represents the rate at which plants absorb carbon dioxide. This feature is relevant because it provides information about the plants' ability to mitigate CO2 levels and contribute to carbon sequestration.
+
+Growth Habit: Describes the growth habit of plants (e.g., succulent, fern, herbaceous). This feature is relevant as different growth habits can indicate variations in plant structure, function, and adaptation to different environments.
+
+Leaf Surface Area: Indicates the surface area of the leaves. This feature is relevant because larger leaf surface areas generally correlate with higher photosynthetic rates and greater carbon uptake potential.
+
+Leaf Structure: Describes the thickness of the leaves (e.g., thick, thin). Leaf structure can influence various physiological processes, such as gas exchange, water loss, and light absorption, making it relevant for clustering.
+
+Tolerance to Pollution: Represents the plants' tolerance or sensitivity to pollution. This feature is relevant if you want to explore the clustering of plants based on their ability to withstand pollution and their potential for air quality improvement.
+
+Growth Rate: Indicates the speed at which plants grow. This feature is relevant because it can reflect the plants' vigor, resource utilization, and potential for biomass accumulation.
+
+These features capture important characteristics related to plant physiology, growth patterns, and environmental adaptation, which can help identify distinct clusters within the dataset.
+
+
+## 3. Feature engineering and data processing 
+
+CO2 Absorption Rate: This numeric variable represents the rate at which plants absorb carbon dioxide. It is essential for assessing the plants' ability to sequester carbon and contribute to carbon dioxide reduction.
+
+Growth Habit: This categorical variable describes the growth habit of plants, such as succulent, fern, herbaceous, etc. It provides insights into different plant structures and growth patterns, which can help identify distinct clusters based on growth habit similarities.
+
+Leaf Surface Area: This categorical variable indicates the surface area of the leaves, categorized as low, moderate, or high. It reflects the leaf's size and plays a crucial role in photosynthesis and gas exchange. It can be used to identify clusters of plants with similar leaf surface area characteristics.
+
+Leaf Structure: This categorical variable describes the thickness of the leaves, categorized as thin or thick. Leaf structure influences various physiological processes and can be used to identify clusters based on leaf structural similarities.
+
+Tolerance to Pollution: This categorical variable represents the plants' tolerance to pollution, categorized as low, moderate, or high. It is relevant if you want to explore clusters based on the plants' ability to tolerate or mitigate pollution.
+
+Growth Rate: This categorical variable indicates the growth rate of plants, categorized as slow, moderate, or fast. It reflects the plants' speed of growth and can help identify clusters of plants with similar growth rates.
+
+
+
+
+Here we check if our data has any missing values.
+
+We have no missing values in our dataset
+```{r}
+
+# Counting the number of missing values in each column
+colSums(is.na(subset_data))
+```
+
+The code suggests that the variables 'Growth Habit', 'Leaf Surface Area', 'Leaf Structure', 'Tolerance to Pollution', and 'Growth Rate' are originally stored as character data types.
+
+By converting these variables to factors, it indicates that they are categorical variables with distinct levels or categories.
+
+The conversion to factors is often done to facilitate categorical data analysis or modeling tasks, as factors provide a convenient way to represent and analyze categorical variables in R.
+
+
+```{r}
+# Converting character variables to factors
+subset_data$`Growth Habit` <- as.factor(subset_data$`Growth Habit`)
+subset_data$`Leaf Surface Area` <- as.factor(subset_data$`Leaf Surface Area`)
+subset_data$`Leaf Structure` <- as.factor(subset_data$`Leaf Structure`)
+subset_data$`Tolerance to Pollution` <- as.factor(subset_data$`Tolerance to Pollution`)
+subset_data$`Growth Rate` <- as.factor(subset_data$`Growth Rate`)
+# Verifying the transformed data
+str(subset_data)
+
+```
+
+
+
+
+
+Here we can see  that the 'Leaf Surface Area' variable is a categorical variable with different levels or categories.
+
+We are applying Label encoding  to convert the categorical variable into numerical representation, where each category is being replaced with a unique integer code.
+
+The resulting encoded values are being stored back into the 'Leaf Surface Area' variable in the subset_data data frame.
+
+Label encoding is useful when working with machine learning algorithms that require numerical inputs, as it allows categorical variables to be represented in a format that algorithms can process.
+```{r}
+# Unique categories in Leaf Surface Area
+
+leaf_surface_area_categories <- unique(subset_data$`Leaf Surface Area`)
+
+# Create a mapping dictionary for label encoding
+
+leaf_surface_area_mapping <- setNames(as.integer(seq_along(leaf_surface_area_categories)), leaf_surface_area_categories)
+
+# Apply label encoding to the Leaf Surface Area variable
+
+subset_data$`Leaf Surface Area` <- leaf_surface_area_mapping[subset_data$`Leaf Surface Area`]
+
+
+```
+
+
+Here we can again see that the 'Tolerance to Pollution' variable is a categorical variable with different levels or categories.
+
+We apply Label encoding to convert the categorical variable into numerical representation, where each category is replaced with a unique integer code.
+The resulting encoded values are stored back into the 'Tolerance to Pollution' variable in the subset_data data frame.
+
+Label encoding is useful when working with machine learning algorithms that require numerical inputs, as it allows categorical variables to be represented in a format that algorithms can process.
+
+The tolerance_to_pollution_mapping dictionary can be used later to decode the encoded values back into their original categorical labels if needed.
+
+```{r}
+# Unique categories in Tolerance to Pollution
+
+tolerance_to_pollution_categories <- unique(subset_data$`Tolerance to Pollution`)
+
+# Create a mapping dictionary for label encoding
+
+tolerance_to_pollution_mapping <- setNames(as.integer(seq_along(tolerance_to_pollution_categories)), tolerance_to_pollution_categories)
+
+# Apply label encoding to the Tolerance to Pollution variable
+
+subset_data$`Tolerance to Pollution` <- tolerance_to_pollution_mapping[subset_data$`Tolerance to Pollution`]
+
+
+```
+
+
+Here we are applying  standardizing to 'CO2 Absorption Rate' variable to bring it to a common scale and facilitate further analysis or modeling tasks that require variables to have similar ranges.
+
+standardization transforms the variable values to have a mean of 0 and a standard deviation of 1. This step is useful when working with variables that have different scales or units, as it brings them to a comparable scale.
+```{r}
+# Standardizing the numerical variables
+subset_data$`CO2 Absorption Rate` <- scale(subset_data$`CO2 Absorption Rate`)
+
+
+```
+
+
+
+## 4. Modelling
+
+
+We are using the Clustering Model
+
+Why?
+It is an unsupervised learning model which allows us to discover natural groupings in the data without relying on pre-existing class information.
+
+Clustering algorithms are computationally efficient and scalable to large datasets, allowing us to analyze a significant number of plant samples and their CO2 absorption characteristics.
+
+Clustering models provide interpretable results, as the generated clusters represent natural groupings that can be analyzed and interpreted to gain insights into different groups of plants based on their CO2 absorption rates.
+
+
+
+
+
+
+
+
+We are selecting the relevant features "CO2 Absorption Rate," "Leaf Surface Area," and "Tolerance to Pollution" from the processed data. These features are important for analyzing the characteristics of plant species in relation to CO2 sequestration and pollution reduction.
+```{r}
+# Selecting relevant features for clustering
+relevant_features <- subset_data[, c("CO2 Absorption Rate", "Leaf Surface Area", "Tolerance to Pollution")]
+
+```
+
+
+
+
+By specifying iter.max = 10, we are setting the maximum number of iterations to 10. This means that the algorithm will perform up to 10 iterations to converge to a solution.
+```{r}
+# Perform K-means clustering
+kmeans_result <- kmeans(relevant_features, centers = 3, iter.max = 10, nstart = 25)
+
+```
+
+
+
+
+We assign the cluster labels obtained from the K-means clustering to the processed data. This allows us to identify which cluster each plant species belongs to for further analysis.
+```{r}
+# Assign cluster labels to the data
+cluster_labels <- kmeans_result$cluster
+
+# Add cluster labels to the processed data
+subset_data$Cluster <- cluster_labels
+cluster_labels
+```
+
+
+
+
+
+
+
+
+## 5. Results
+
+We are calculating the means of each feature within each cluster. This provides us with the average values of CO2 absorption rate, leaf surface area, and tolerance to pollution for each cluster. Printing the cluster_means will display these average values for each cluster.
+
+Group.1: This column represents the cluster number (Cluster 1, Cluster 2, Cluster 3).
+
+CO2 Absorption Rate: This column represents the mean value of the "CO2 Absorption Rate" feature for each cluster. It indicates the average CO2 absorption rate of the plants within each cluster.
+
+Leaf Surface Area: This column represents the mean value of the "Leaf Surface Area" feature for each cluster. It indicates the average leaf surface area of the plants within each cluster.
+
+Tolerance to Pollution: This column represents the mean value of the "Tolerance to Pollution" feature for each cluster. It indicates the average tolerance to pollution of the plants within each cluster.
+
+
+Cluster 1 has a mean CO2 absorption rate of approximately -0.41, a mean leaf surface area of 2.21, and a mean tolerance to pollution of 1.41.
+
+Cluster 2 has a mean CO2 absorption rate of approximately 0.18, a mean leaf surface area of 1.00, and a mean tolerance to pollution of 1.14.
+
+Cluster 3 has a mean CO2 absorption rate of approximately 2.29, a mean leaf surface area of 1.36, and a mean tolerance to pollution of 1.09.
+```{r}
+# Calculate cluster means for each feature
+cluster_means <- aggregate(relevant_features, by = list(subset_data$Cluster), FUN = mean)
+
+# Print the cluster means
+cluster_means
+
+
+```
+
+
+The scatter plot visualizes the relationship between CO2 Absorption Rate and Leaf Surface Area, the separation of data points into clusters, and the distinct characteristics of each cluster.
+
+There is a positive correlation between CO2 Absorption Rate and Leaf Surface Area. Plants with higher CO2 Absorption Rates tend to have larger Leaf Surface Areas, while plants with lower CO2 Absorption Rates have smaller Leaf Surface Areas.
+
+The clustering algorithm successfully separates the data points into distinct clusters based on CO2 Absorption Rate and Leaf Surface Area. The clusters appear to be well-separated, indicating that the algorithm effectively identified groups with different characteristics.
+
+The cluster means, represented by the position of each cluster on the plot, provide insights into the characteristics of each group. Cluster 1 shows lower values for both CO2 Absorption Rate and Leaf Surface Area, suggesting a distinct growth pattern or environmental preference. Cluster 2 represents plants with average CO2 Absorption Rate and Leaf Surface Area. Cluster 3 exhibits higher values for both features, indicating a different growth pattern or environmental preference compared to the other clusters.
+```{r}
+library(ggplot2)
+# Plot CO2 Absorption Rate vs. Leaf Surface Area colored by cluster
+ggplot(subset_data, aes(x = `CO2 Absorption Rate`, y = `Leaf Surface Area`, color = factor(Cluster))) +
+  geom_point() +
+  labs(x = "CO2 Absorption Rate", y = "Leaf Surface Area", color = "Cluster") +
+  theme_minimal()
+
+
+```
+
+Here we are using the bar plot to visually represent the 'CO2 Absorption Rate' of different plants.
+
+The x-axis of the plot represents the different plants, while the y-axis represents the 'CO2 Absorption Rate'. The height of each bar corresponds to the value of the 'CO2 Absorption Rate' for each plant.
+
+The plants on the x-axis are reordered based on their 'CO2 Absorption Rate' in ascending order. This allows for a clear comparison of the absorption rates among different plants.
+
+By examining this bar plot, we can make observations about the relative CO2 absorption rates of different plants, identify any variations or trends, and potentially make comparisons between the plants in terms of their ability to absorb CO2.
+```{r}
+# Bar plot of CO2 Absorption Rate
+ggplot(subset_data, aes(x = reorder(Plant, `CO2 Absorption Rate`), y = `CO2 Absorption Rate`)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(x = "Plant", y = "CO2 Absorption Rate", title = "CO2 Absorption Rate of Plants") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+```
+
+
+Tolerance to Pollution and CO2 Absorption Rate: The scatter plot visualizes the relationship between Tolerance to Pollution (x-axis) and CO2 Absorption Rate (y-axis). It shows how these two variables are distributed across the data points. Each data point represents a plant, and the color represents the assigned cluster.
+
+From the scatter plot, we can make the following conclusions:
+
+There is no clear linear relationship between Tolerance to Pollution and CO2 Absorption Rate. The data points are scattered across the plot, indicating that these two variables are not strongly correlated.
+
+However, we can observe some general trends within clusters. For example, plants in Cluster 3 (green) tend to exhibit higher Tolerance to Pollution and higher CO2 Absorption Rates compared to plants in Cluster 1 (blue) and Cluster 2 (orange).
+
+There is some overlap between the clusters, particularly between Cluster 2 and Cluster 3, where some data points have similar Tolerance to Pollution values but different CO2 Absorption Rates.
+
+
+```{r}
+# Scatter plot of Tolerance to Pollution vs. CO2 Absorption Rate
+ggplot(subset_data, aes(x = `Tolerance to Pollution`, y = `CO2 Absorption Rate`, color = factor(Cluster))) +
+  geom_point() +
+  labs(x = "Tolerance to Pollution", y = "CO2 Absorption Rate", color = "Cluster", title = "Tolerance to Pollution vs. CO2 Absorption Rate") +
+  theme_minimal()
+
+```
+
+
+
+Cluster Comparison: The box plot allows us to compare the CO2 absorption rates between clusters. We can observe that Cluster 3 has the highest median CO2 absorption rate, indicating that plants in this cluster tend to have a higher CO2 absorption capacity. In contrast, Cluster 1 has the lowest median CO2 absorption rate, suggesting a lower capacity for CO2 absorption. Cluster 2 falls in between with a moderate median CO2 absorption rate.
+
+It highlights the higher CO2 absorption capacity of plants in Cluster 3, the lower capacity in Cluster 1, and the moderate capacity in Cluster 2. The visualization allows for easy comparison and provides a clear understanding of the distribution and variations in CO2 absorption rates across the clusters.
+
+```{r}
+# Box plot of CO2 Absorption Rate by Cluster
+ggplot(subset_data, aes(x = factor(Cluster), y = `CO2 Absorption Rate`, fill = factor(Cluster))) +
+  geom_boxplot() +
+  labs(x = "Cluster", y = "CO2 Absorption Rate", fill = "Cluster", title = "CO2 Absorption Rate by Cluster") +
+  theme_minimal()
+
+
+```
+
+Here we can see which plants be long to which cluster accordingly
+
+```{r}
+# Create a table of plant names and cluster assignments
+cluster_table <- data.frame(Plant_Name = subset_data$Plant, Cluster = subset_data$Cluster)
+
+# Print the cluster table
+print(cluster_table)
+
+
+
+```
+## 6. Conclusion
+
+Objective: The main objective of this study was to analyze plant data and identify clusters based on their CO2 absorption rate, leaf surface area, and tolerance to pollution.
+
+Method: To achieve this objective, we performed exploratory data analysis, preprocessed the data, applied a clustering algorithm, and evaluated the results.
+
+Results: The analysis revealed three distinct clusters based on CO2 absorption rate and leaf surface area. Cluster 1 showed lower CO2 absorption rate and smaller leaf surface area, Cluster 2 had average values for both features, while Cluster 3 exhibited higher values for both features. Additionally, we observed that some plants had higher CO2 absorption rates and were more tolerant to pollution.
+
+Objective Achievement: The objectives of identifying clusters based on CO2 absorption rate and leaf surface area, as well as identifying plants with higher CO2 absorption rates and tolerance to pollution, have been successfully addressed.
+
+Limitations: It is important to note that this study has some limitations. First, the analysis is based on a specific dataset, and the results may not be generalized to all plant species. Second, the clustering algorithm used may not capture all possible patterns and variations in the data. Therefore, further research with larger and more diverse datasets, as well as the exploration of alternative clustering methods, would be beneficial.
+
+Implications: The findings of this study have implications for plant classification and understanding their responses to environmental factors. By identifying clusters based on CO2 absorption rate and leaf surface area, we can gain insights into different growth patterns and environmental preferences among plant species. This information can be valuable for ecological studies, conservation efforts, and plant selection in various applications such as landscaping or urban greening projects.
+
+In conclusion, this study successfully analyzed plant data, identified clusters based on key features, and provided insights into the relationship between CO2 absorption rate, leaf surface area, and tolerance to pollution. While there are limitations to consider, the results contribute to our understanding of plant characteristics and have practical implications for various fields. Further research and refinement of clustering techniques can expand on these findings and provide more comprehensive insights into plant classification and environmental responses.
