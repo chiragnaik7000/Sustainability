@@ -1,0 +1,325 @@
+---
+title: "CST4070 - Comp. 3"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+**Student**:
+
+- Name:Chirag 
+- Surname:Naik
+- Student number:M00933470
+- Campus:Dubai<!---->
+
+
+## 1. Problem definition
+Problem Statement:  Air pollution and high levels of CO2 pose significant health and environmental challenges in urban areas. To address this problem, we  propose investigating the effectiveness of green walls in reducing PM concentrations and CO2 levels. By understanding how different environmental variables impact this relationship, we are aiming to provide evidence for the
+benefits of implementing green walls as a sustainable solution.
+
+Who can benefit ?
+
+Building Owners and Operators: Green walls improve air quality and create a healthier indoor environment, leading to increased tenant satisfaction, productivity, and well-being.
+
+Residents and Occupants: Green walls mitigate the harmful effects of air pollutants on respiratory health, provide visual appeal, and enhance the quality of life for individuals living or working in buildings with green walls.
+
+Environmental Organizations: Green walls contribute to sustainability and conservation goals by reducing air pollution and CO2 levels, making them a proactive step towards eco-friendly urban development.
+
+Local Communities: Implementing green walls in urban areas improves air quality not only for building occupants but also for people in the vicinity, creating a healthier environment for pedestrians and neighbouring buildings.
+
+Government and City Planners: Green walls align with urban planning initiatives focused on sustainability and improving quality of life. Encouraging the integration of green walls through building codes and regulations supports air quality improvement and sustainable urban development goals.
+
+
+
+
+State here your research question.
+
+Can the presence of green walls significantly reduce PM concentrations and CO2 levels and how do various environmental variables affect this relationship
+
+
+
+```{r}
+
+library("readxl")
+excel_file="model 1.xlsx"
+data=read_excel(excel_file)
+
+
+```
+
+
+
+## 2. Data description
+
+Here we are checking the dimensions of our data.
+
+Our data has 90 rows and 8 coloumns
+The data is in a tabular format, organized in rows and columns. Each row represents a unique observation, and each column represents a specific feature or variable.
+
+```{r}
+#checking the dimensions of our data
+dim(data)
+```
+Here we are checking the structure of our data.
+
+With this data, we can perform various analyses, such as exploring the trends and patterns in the PM and CO2 measurements over time, comparing the measurements with and without the GW factor, and assessing the relationship between different variables.
+```{r}
+# Displaying the structure of the dataset
+str(data)
+```
+
+
+summary of the distribution and range of the different measurements (PM1, PM2, and CO2) with and without the GW factor.
+```{r}
+# Calculating the summary statistics
+summary(data)
+```
+```{r}
+# Checking the coloumn names
+names(data)
+
+```
+```{r}
+# Checking the first 5 rows of our dataset
+head(data)
+
+```
+Date: The date on which the measurements were taken.
+PM1 With GW: Particulate Matter 1 (PM1) concentration with Green Wall (GW).
+PM1 Without GW: PM1 concentration without GW.
+PM2 With GW: Particulate Matter 2 (PM2) concentration with GW.
+PM2 Without GW: PM2 concentration without GW.
+CO2_With GW: Carbon Dioxide (CO2) concentration with GW.
+CO2_Without GW: CO2 concentration without GW.
+
+
+
+ "Date" column is transformed into the appropriate date format, allowing for easier manipulation and analysis of temporal data.
+This conversion enables various operations on the dates, such as sorting, filtering, and extracting components like month or year, which can be useful for time-based analysis and visualization.
+```{r}
+# Converting the 'Date' column to the appropriate format
+data$Date <- as.Date(data$Date, format = "%m/%d/%Y")
+
+```
+
+
+
+The data is subsetted based on the condition that the "Date" column falls within the range from January 1, 2023, to March 31, 2023.
+
+The resulting subset of data is stored in the variable subset_data.
+
+The number of observations in subset_data is calculated using the nrow() function and stored in the variable num_observations.
+
+The number of features in subset_data is calculated using the ncol() function and stored in the variable num_features.
+
+The cat() function is used to print a formatted message that displays the number of observations and features in subset_data.
+
+```{r}
+# Subseting the data
+subset_data <- data[data$Date >= "2023-01-01" & data$Date <= "2023-03-31", ]
+
+```
+```{r}
+# Determining the number of observations and features
+num_observations <- nrow(subset_data)
+num_features <- ncol(subset_data)
+# Printing the number of observations and features
+cat("The subsetted data contains", num_observations, "observations and", num_features, "features.\n")
+
+```
+```{r}
+# Displaying the summary statistics of the relevant features
+summary(data$Date)
+summary(data$`PM1 With GW`)
+summary(data$`PM1 Without GW`)
+summary(data$`PM2 With GW`)
+summary(data$`PM2 without GW`)
+summary(data$`CO2_With GW`)
+summary(data$`CO2_Without GW`)
+summary(data$Week)
+
+```
+All the following features are relevant for our enquiry.
+
+Date: This feature provides the specific time period of the data and allows for the analysis of temporal trends and patterns in the dataset.
+
+PM1_With_GW: This feature represents the concentration of PM with the presence of greenhouse gases, enabling assessment of the impact of greenhouse gases on PM levels.
+
+PM1_Without_GW: This feature represents the concentration of PM without the presence of greenhouse gases, allowing for the evaluation of the influence of greenhouse gases on PM levels.
+
+PM2_With_GW: This feature represents the concentration of PM of a different size range with the presence of greenhouse gases, providing insights into the impact of greenhouse gases on specific PM size fractions.
+
+PM2_Without_GW: This feature represents the concentration of PM of a different size range without the presence of greenhouse gases, aiding in understanding the role of greenhouse gases in influencing PM levels across different size fractions.
+
+CO2_With_GW: This feature represents the concentration of CO2 with the presence of greenhouse gases, facilitating the investigation of the relationship between greenhouse gases and CO2 levels.
+
+CO2_Without_GW: This feature represents the concentration of CO2 without the presence of greenhouse gases, enabling assessment of the contribution of greenhouse gases to CO2 levels.
+
+
+## 3. Feature engineering and data processing 
+
+converting the dates to weekly intervals   for aggregating data and analyzing trends at a weekly level instead of daily granularity. It allows for easier summarization and comparison of data over weekly time periods.
+```{r}
+library(lubridate)
+# Converting the  Date variable to the desired temporal unit (weekly)
+data$Week <- lubridate::floor_date(data$Date, unit = "week")  # Rounding down to the nearest week
+
+```
+```{r}
+
+library(dplyr)
+library(magrittr)
+
+```
+This aggregation step can be useful for analyzing and comparing the average levels of different pollutants (PM1, PM2, CO2) with and without the greenhouse effect on a weekly basis. It provides a consolidated view of the data at a higher level of granularity, making it easier to identify patterns and trends over time.
+```{r}
+# Aggregating the data by calculating the average values for each variable within each week
+aggregated_data <- data %>%
+  group_by(Week) %>%
+  summarize(
+    Average_PM1_With_GW = mean(`PM1 With GW`),
+    Average_PM1_Without_GW = mean(`PM1 Without GW`),
+    Average_PM2_With_GW = mean(`PM2 With GW`),
+    Average_PM2_Without_GW = mean(`PM2 without GW`),
+    Average_CO2_With_GW = mean(`CO2_With GW`),
+    Average_CO2_Without_GW = mean(`CO2_Without GW`)
+  )
+
+# Preview the transformed data
+print(aggregated_data)
+```
+```{r}
+str(aggregated_data)  # Displaying the structure of the object
+head(aggregated_data)  # Showing the first few rows of the data
+summary(aggregated_data)  # Provide summary statistics of the data
+
+
+```
+This is our formatted data.
+
+## 4. Modelling
+
+We are using the linear regression model.
+
+ Linear regression is suitable when there is a linear relationship between the dependent variable and the independent variables. If there is a reasonable expectation that the average PM1 levels with the greenhouse effect can be explained by a linear combination of the other variables, then a linear regression model can capture this relationship.
+
+```{r}
+library(caret)
+```
+Splitting the data into training and testing sets: Dividingy the aggregated_data into two subsets: one for training the model and one for evaluating its performance.
+```{r}
+set.seed(123)  
+train_indices <- createDataPartition(aggregated_data$Average_PM1_With_GW, p = 0.8, list = FALSE)
+train_data <- aggregated_data[train_indices, ]
+test_data <- aggregated_data[-train_indices, ]
+```
+
+Here we are fitting the  linear regression model   using the train_data dataset.
+
+
+This approach allows for the creation of a linear regression model that can predict the average PM1 levels with the greenhouse effect using the remaining variables in the dataset. The predictions can then be used for analysis, evaluation, or comparison with actual values to assess the model's performance.
+```{r}
+# Fitting a linear regression model to predict Average_PM1_With_GW using all other variables
+model <- lm(Average_PM1_With_GW ~ ., data = train_data)
+# Generating predictions using the linear regression model
+predictions <- predict(model, newdata = test_data)
+```
+Measuring the performance: Calculating the  performance metrics to evaluate the model's accuracy.
+```{r}
+library(Metrics)
+#calculating Mean Squared Error
+mse <- mse(predictions, test_data$Average_PM1_With_GW)
+#Calculating root mean squared error
+rmse <- rmse(predictions, test_data$Average_PM1_With_GW)
+# Calculate R-squared value
+rsquared <- summary(model)$r.squared
+```
+
+
+## 5. Results
+
+```{r}
+
+library(ggplot2)
+library(magrittr)
+library(dplyr)
+library(tidyr)
+
+```
+
+The following visualization demonstrates the lower PM1 levels associated with the presence of a green wall.
+
+The line representing the "With GW" condition consistently shows lower PM1 concentration compared to the "Without GW" condition.
+
+These findings contribute to the growing body of knowledge on green infrastructure and its potential benefits for mitigating air pollution in urban environments. Further studies and real-world implementations can build upon these insights to create healthier and more sustainable cities.
+
+
+
+```{r}
+# Average PM1 Concentration
+pm1_comparison <- aggregated_data %>%
+  select(Week, Average_PM1_With_GW, Average_PM1_Without_GW) %>%
+  gather(key = "Condition", value = "PM1_Concentration", -Week)
+# Visualization: PM1 Concentration Comparison
+ggplot(pm1_comparison, aes(x = Week, y = PM1_Concentration, color = Condition)) +
+  geom_line() +
+  labs(x = "Week", y = "PM1 Concentration (µg/m³)", color = "Condition") +
+  theme_minimal()
+
+```
+
+
+The visualization below illustrates the comparison of average PM2 concentration over time for both conditions: "With GW" (green wall) and "Without GW" (no green wall).
+
+The line representing the "With GW" condition consistently exhibits lower PM2 concentration compared to the "Without GW" condition. This finding suggests that the presence of the green wall contributes to a reduction in PM2 concentration in the surrounding environment.
+
+
+```{r}
+# Average PM2 Concentration
+pm2_comparison <- aggregated_data %>%
+  select(Week, Average_PM2_With_GW, Average_PM2_Without_GW) %>%
+  gather(key = "Condition", value = "PM2_Concentration", -Week)
+
+# Visualization: PM2 Concentration Comparison
+ggplot(pm2_comparison, aes(x = Week, y = PM2_Concentration, color = Condition)) +
+  geom_line() +
+  labs(x = "Week", y = "PM2 Concentration (µg/m³)", color = "Condition") +
+  theme_minimal()
+```
+
+
+The visualization below showcases the comparison of average CO2 concentration over time for both conditions: "With GW" (green wall) and "Without GW" (no green wall).
+
+The line representing the "With GW" condition demonstrates consistently lower CO2 concentration compared to the "Without GW" condition.
+
+CO2 Concentration Comparison
+
+
+```{r}
+# Average CO2 Concentration
+co2_comparison <- aggregated_data %>%
+  select(Week, Average_CO2_With_GW, Average_CO2_Without_GW) %>%
+  gather(key = "Condition", value = "CO2_Concentration", -Week)
+
+# Visualization: CO2 Concentration Comparison
+ggplot(co2_comparison, aes(x = Week, y = CO2_Concentration, color = Condition)) +
+  geom_line() +
+  labs(x = "Week", y = "CO2 Concentration (ppm)", color = "Condition") +
+  theme_minimal()
+```
+## 6. Conclusion
+
+Our study aimed to evaluate the influence of a green wall on air quality, focusing on PM1, PM2, and CO2 concentrations. Our objective was to determine whether the presence of a green wall contributes to improved air quality in urban environments. The data analysis and visualization revealed several key findings.
+
+First, the comparison of average PM1 concentration between the conditions "With GW" (green wall) and "Without GW" (no green wall) showed a consistent decrease in PM1 levels when the green wall was present. Similarly, the average PM2 concentration exhibited a noticeable reduction in the presence of the green wall. These results suggest that green walls have a positive impact on reducing PM1 and PM2 concentrations, contributing to improved air quality.
+
+Furthermore, the analysis of average CO2 concentration indicated consistently lower levels in the "With GW" condition, highlighting the green wall's role in reducing CO2 levels in the surrounding environment. This finding underscores the potential of green walls as a nature-based solution for mitigating carbon dioxide emissions and enhancing air quality.
+
+Overall, the study successfully addressed its objectives by demonstrating the positive influence of a green wall on air quality. The findings support the use of green walls as a viable strategy for reducing air pollutants and creating healthier urban environments.
+
+However, it's important to acknowledge the study's limitations. The research focused on a specific location and time period, limiting the generalizability of the findings to other contexts. Additionally, the analysis relied on aggregated data, and further research is needed to explore the underlying mechanisms of how green walls impact air quality in more detail.
+
+The implications of this study are significant for urban planning and design. Incorporating green walls into urban environments can contribute to mitigating air pollution and improving overall air quality. Green infrastructure interventions offer a sustainable approach to reducing air pollutants, particularly in densely populated areas. The study emphasizes the importance of integrating nature-based solutions into urban planning practices to create healthier and more sustainable cities.
+
+In conclusion, the study highlights the positive impact of green walls on air quality, specifically in reducing particulate matter and CO2 concentrations. Further research and implementation of green infrastructure solutions are needed to fully explore their potential in creating healthier and more sustainable urban environments.
